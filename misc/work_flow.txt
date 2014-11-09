@@ -1,0 +1,33 @@
+# work flow for hosting on EC2
+
+1. Lunch EC2 instance
+
+2. Connect via SSH
+
+3. Set up enviroment: 
+	sudo yum update. 
+	
+	Install other software if needed.
+
+4. Upload files to EC2 instance: use scp
+	scp -i my-key-pair.pem ec2-user@ec2-198-51-100-1.compute-1.amazonaws.com:~/File1.txt ~/File2.txt
+	
+For more info:
+http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AccessingInstancesLinux.html
+
+5. use screen command to run in background
+
+	$ screen 
+	$ java -jar yourApplication  
+	$ other commands 
+	$ CTRL-A D
+	
+
+Screen comands:
+1. Enter: screen
+2. Detach: CTRL-A D
+3. Reentry: screen -r [screen id if there is multiple screens] 
+4. Exit: CTRL-A K or exit
+5. List: screen -ls
+6. Help: CTRL-A ?
+7. Logging: within screen: CTRL-A H (otggle on/off) OR at the start screen -L
