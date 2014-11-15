@@ -12,10 +12,14 @@
 4. Upload files to EC2 instance: use scp
 	scp -i my-key-pair.pem ec2-user@ec2-198-51-100-1.compute-1.amazonaws.com:~/File1.txt ~/File2.txt
 	
+	Files to upload: jar file, logger.properties, and config_secret.sh
+	
+5. Set up end ENV properties: run config_secret.sh and check .bashrc file 
+	
 For more info:
 http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AccessingInstancesLinux.html
 
-5. use screen command to run in background
+6. use screen command to run in background
 
 	$ screen 
 	$ java -jar yourApplication  

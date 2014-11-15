@@ -39,5 +39,7 @@ local.properties
 .texlipse
 
 ### Extra: app related ##
-config_secret.*
+*secret*.*
 .bashrc
+log/
+*.csv 

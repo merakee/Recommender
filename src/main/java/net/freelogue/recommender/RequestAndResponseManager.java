@@ -3,7 +3,12 @@ package net.freelogue.recommender;
 import org.json.JSONObject;
 import org.json.JSONException;
 
-import java.util.Arrays;
+import java.util.List;
+import org.apache.mahout.cf.taste.recommender.RecommendedItem;
+
+import java.util.logging.Level;
+//import java.util.Arrays;
+import java.util.logging.Logger;
 
 //import java.io.*;
 
@@ -11,6 +16,9 @@ public class RequestAndResponseManager {
 	enum ApiProcessingError {
 		InvalidRequest, CommandMissing, IncompleteRequest, InvalidParameter, ParameterMissing, RequestParseError, ResponseParseError, GenericError
 	}
+
+	// class variables
+	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
 	String getResponseForRequest(String request) {
 		return parseRequest(request);
@@ -23,6 +31,7 @@ public class RequestAndResponseManager {
 			String params = json.getString("params");
 			return createResponse(command, params);
 		} catch (JSONException je) {
+			LOGGER.log(Level.WARNING, je.getMessage(), je);
 			return createJsonString(false,
 					getErrorString(ApiProcessingError.RequestParseError));
 		}
@@ -46,29 +55,30 @@ public class RequestAndResponseManager {
 				return createJsonString(false,
 						getErrorString(ApiProcessingError.InvalidParameter));
 			}
-			String response = convert2DArrayToString(RecommendationManager
+			String response = convertRecommendedItemListToString(RecommendationManager
 					.getRecommendationForUser(userId));
 			return createJsonString(true, response);
 		} catch (NumberFormatException nfe) {
+			LOGGER.log(Level.WARNING, nfe.getMessage(), nfe);
 			return createJsonString(false,
 					getErrorString(ApiProcessingError.InvalidParameter));
 		}
 	}
 
-	String convert2DArrayToString(double[][] array2D){
+	String convertRecommendedItemListToString(List<RecommendedItem> recomList) {
+		if(recomList.isEmpty()){
+			return "[]";
+		}
 		String arrayString = "[";
-		for(double[] array:  array2D){
-			arrayString += "[";
-			for(double val: array){
-				arrayString += val + ",";
-			}
-			arrayString = CommonUtil.stringTrimLast(arrayString);
-			arrayString += "],";
-			System.out.println(arrayString);
+		for (RecommendedItem item : recomList) {
+			arrayString += "[" + item.getItemID() + "," + item.getValue()
+					+ "],";
 		}
 		arrayString = CommonUtil.stringTrimLast(arrayString);
-		return arrayString + "]";
+		arrayString += "]";
+		return arrayString;
 	}
+
 	String createJsonString(boolean success, String response) {
 		JSONObject json = new JSONObject();
 		try {
@@ -80,6 +90,7 @@ public class RequestAndResponseManager {
 			}
 			return json.toString();
 		} catch (JSONException je) {
+			LOGGER.log(Level.WARNING, je.getMessage(), je);
 			return "{\"success\": false, \"error\": \""
 					+ getErrorString(ApiProcessingError.ResponseParseError)
 					+ "\"}";
