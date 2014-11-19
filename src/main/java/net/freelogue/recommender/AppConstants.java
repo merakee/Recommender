@@ -16,14 +16,14 @@ public class AppConstants {
 	public static final float INPUT_SPREAD_VAL = 5.0f;
 	public static final float INPUT_KILL_VAL = 1.0f;
 
-	public static final int DEFAULT_NUM_RECOMMENDATIONS = 400;
+	public static final int DEFAULT_NUM_RECOMMENDATIONS = 20;
 
 	public static final String SVD_DATA_FILE = "./svd_data.data";
 	public static final String CSV_DATA_FILE = "./ratings_data.csv";
 
 	// Timing parameters
-	public static final long DATABASE_POLLING_INTERVAL = 30; // in seconds
-	public static final int API_SOCKET_TIMEOUT_INTERVAL = 60; // in seconds
+	public static final long DATABASE_POLLING_INTERVAL = 300; // in seconds
+	public static final int API_SOCKET_TIMEOUT_INTERVAL = 60; // in seconds // Currently not used:
 	
 	// Thread Parameters
 	public static final int API_MANAGER_THREAD_PRIORITY = Thread.MAX_PRIORITY;
