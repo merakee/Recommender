@@ -110,8 +110,8 @@ public class Recommender {
 		FileDataModel dataModel = (FileDataModel) svdRecommender.getDataModel();
 		String modelInfo = "Recommender update completed with Recommender settings: ";
 		try {
-			modelInfo += "Numer of Users: " + dataModel.getNumUsers() + ", ";
-			modelInfo += "Numer of Contents: " + dataModel.getNumItems() + ", ";
+			modelInfo += "Number of Users: " + dataModel.getNumUsers() + ", ";
+			modelInfo += "Number of Contents: " + dataModel.getNumItems() + ", ";
 			modelInfo += "Max Preference: " + dataModel.getMaxPreference()
 					+ ", ";
 			modelInfo += "Min Preference: " + dataModel.getMinPreference();

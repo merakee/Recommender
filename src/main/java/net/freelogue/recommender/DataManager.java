@@ -18,6 +18,7 @@ public class DataManager implements Runnable {
 	private static FileWriter fileWriter;
 
 	public static long maxUserResponseId = 0;
+	public static long lastActiveResponseCount = 0;
 	
 	static void getDataFromDatabase() {
 		if (RecommendationManager.isRecommenderUpdateActive) {
@@ -33,16 +34,15 @@ public class DataManager implements Runnable {
 	static void connectToDbAndWriteDataToFile() {
 		try {
 			connectToDb();
-			if (false && !isUpdateNeeded()) {
+			if ( !isUpdateNeededCountBased()) {
 				closeDbConnection();
 				LOGGER.log(Level.INFO,
 						"Skipped updating data due to lack of enough new responses");
 				return;
 			}
-			int limit = CommonUtil.getRandom(50000)+7400;
-			String sql_command = "SELECT user_id,content_id,response FROM user_responses WHERE content_id IN (SELECT id FROM contents GROUP BY id HAVING COUNT(*) >"
-					+ AppConstants.CONTENT_MIN_SPREAD_COUNT
-					+ ") AND user_id !=1 LIMIT " + limit;
+			//int limit = CommonUtil.getRandom(50000)+7400;
+			String sql_command = "SELECT user_id,content_id,response FROM user_responses WHERE content_id IN (SELECT id FROM contents WHERE spread_count >"
+					+ AppConstants.CONTENT_MIN_SPREAD_COUNT + ")";
 			// String sql_command = "SELECT count(*) FROM user_responses ";
 
 			executeStatement(sql_command);
@@ -78,6 +78,22 @@ public class DataManager implements Runnable {
 				: AppConstants.INPUT_SPREAD_VAL;
 	}
 
+	static boolean isUpdateNeededCountBased() throws SQLException {
+		//String sql_command = "SELECT max(id) FROM user_responses";
+		String sql_command = "SELECT count(*) FROM user_responses WHERE content_id IN (SELECT id FROM contents WHERE spread_count >"
+		+ AppConstants.CONTENT_MIN_SPREAD_COUNT + ")";
+		executeStatement(sql_command);
+		if (dbResultsSet.next()) {
+			int totalCount = dbResultsSet.getInt(1);
+			if (totalCount - lastActiveResponseCount > AppConstants.RESPONSE_MIN_COUNT_FOR_UPDATE) {
+				lastActiveResponseCount = totalCount;
+				return true;
+			}
+			return false;
+		} else {
+			return false;
+		}
+	}
 	static boolean isUpdateNeeded() throws SQLException {
 		String sql_command = "SELECT max(id) FROM user_responses";
 		executeStatement(sql_command);
@@ -92,7 +108,7 @@ public class DataManager implements Runnable {
 			return false;
 		}
 	}
-
+	
 	static void connectToDb() throws SQLException {
 		if (dbConnection == null) {
 			dbConnection = DriverManager.getConnection(getDbUrl(),

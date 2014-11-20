@@ -5,7 +5,6 @@ require 'json'
 class Client
   def initialize( api_socket, mode="-m" )
     @mode = mode;
-    puts "running auto mode...." if @mode.eql?"-a"
     @api_socket = api_socket
     @request = nil
     @response = nil
@@ -52,9 +51,12 @@ class Client
   end
   
   def  pause_for_random_time
-    sleep rand(15)
+    sleep rand(120)
   end
 end
 
-api_socket = TCPSocket.open( "localhost", 2014)
+host = (ARGV[1].eql?"-aws")?"womdev.reccomender.freelogue.net":"localhost"
+puts "Connection to #{host} ...running #{(ARGV[0].eql?"-a")?"auto":"manual"} mode...." 
+    
+api_socket = TCPSocket.open( host, 2014)
 Client.new( api_socket,ARGV[0])

@@ -11,7 +11,7 @@ public class AppConstants {
 	public static final int SVD_NUM_ITERATIONS = 10;
 
 	public static final int RESPONSE_MIN_COUNT_FOR_UPDATE = 100;
-	public static final int CONTENT_MIN_SPREAD_COUNT = 0;
+	public static final int CONTENT_MIN_SPREAD_COUNT = 10;
 	public static final int DATAFILE_MIN_BYTE_COUNT_FOR_NONEMPTY = 5;
 	public static final float INPUT_SPREAD_VAL = 5.0f;
 	public static final float INPUT_KILL_VAL = 1.0f;
