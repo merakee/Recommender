@@ -47,7 +47,7 @@ class Client
   end
   
   def get_command(user_id=0)
-    {command:"getRecommendationForUser",params:user_id}.to_json
+    {command:"getRecommendationForUser",params:{user_id:user_id,count:10}}.to_json
   end
   
   def  pause_for_random_time

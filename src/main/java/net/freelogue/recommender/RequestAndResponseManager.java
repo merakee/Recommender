@@ -4,6 +4,8 @@ import org.json.JSONObject;
 import org.json.JSONException;
 
 import java.util.List;
+import java.util.HashMap;
+import java.util.Iterator;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 
 import java.util.logging.Level;
@@ -26,10 +28,14 @@ public class RequestAndResponseManager {
 
 	String parseRequest(String request) {
 		try {
-			JSONObject json = new JSONObject(request);
-			String command = json.getString("command");
-			String params = json.getString("params");
-			return createResponse(command, params);
+			// JSONObject json = new JSONObject(request);
+			// String command = json.getString("command");
+			// String params = json.getString("params");
+			// return createResponse(command, params);
+			ApiRequest apiRequest = getApiRequest(request);
+			HashMap<String, String> paramsHash = parseParams(apiRequest.params);
+			return processCommabdAndCreateResponse(apiRequest.command,
+					paramsHash);
 		} catch (JSONException je) {
 			LOGGER.log(Level.WARNING, je.getMessage(), je);
 			return createJsonString(false,
@@ -37,10 +43,11 @@ public class RequestAndResponseManager {
 		}
 	}
 
-	String createResponse(String command, String params) {
+	String processCommabdAndCreateResponse(String command,
+			HashMap<String, String> paramsHash) {
 		switch (command) {
 		case "getRecommendationForUser":
-			return getRecommendationForUserResponse(params);
+			return getRecommendationForUserResponse(paramsHash);
 		default:
 			return createJsonString(false,
 					getErrorString(ApiProcessingError.InvalidRequest));
@@ -48,15 +55,24 @@ public class RequestAndResponseManager {
 
 	}
 
-	String getRecommendationForUserResponse(String params) {
+	String getRecommendationForUserResponse(HashMap<String, String> paramsHash) {
 		try {
-			int userId = Integer.parseInt(params);
+			int userId = Integer.parseInt(paramsHash.get("user_id"));
 			if (userId <= 0) {
 				return createJsonString(false,
 						getErrorString(ApiProcessingError.InvalidParameter));
 			}
-			String response = convertRecommendedItemListToString(RecommendationManager
-					.getRecommendationForUser(userId));
+			int count = 0;
+			if (paramsHash.get("count") != null) {
+				count = Integer.parseInt(paramsHash.get("count"));
+			}
+			String response;
+			if(count<=0){
+				response = convertRecommendedItemListToString(RecommendationManager.getRecommendationForUser(userId));
+			}
+			else{
+				response = convertRecommendedItemListToString(RecommendationManager.getRecommendationForUser(userId, count));
+			}
 			return createJsonString(true, response);
 		} catch (NumberFormatException nfe) {
 			LOGGER.log(Level.WARNING, nfe.getMessage(), nfe);
@@ -66,7 +82,7 @@ public class RequestAndResponseManager {
 	}
 
 	String convertRecommendedItemListToString(List<RecommendedItem> recomList) {
-		if(recomList.isEmpty()){
+		if (recomList.isEmpty()) {
 			return "[]";
 		}
 		String arrayString = "[";
@@ -77,6 +93,60 @@ public class RequestAndResponseManager {
 		arrayString = CommonUtil.stringTrimLast(arrayString);
 		arrayString += "]";
 		return arrayString;
+	}
+
+	String getErrorString(ApiProcessingError errorType) {
+		switch (errorType) {
+		case InvalidRequest:
+			return "Invalid Request";
+		case CommandMissing:
+			return "Command Missing";
+		case IncompleteRequest:
+			return "Imcomplete Request";
+		case ParameterMissing:
+			return "Parameter Missing";
+		case InvalidParameter:
+			return "Invalid Parameter";
+		case RequestParseError:
+			return "Request Parse Error";
+		case ResponseParseError:
+			return "Response Parse Error";
+		case GenericError:
+			return "Generic Error";
+		default:
+			return "Something went wrong with request processing";
+		}
+	}
+
+	/*
+	 * JSON creation and parsing
+	 */
+	class ApiRequest {
+		String command, params;
+
+		public ApiRequest(String command, String params) {
+			this.command = command;
+			this.params = params;
+		}
+	}
+
+	ApiRequest getApiRequest(String request) throws JSONException {
+		JSONObject json = new JSONObject(request);
+		String command = json.getString("command");
+		String params = json.getString("params");
+		return new ApiRequest(command, params);
+	}
+
+	HashMap<String, String> parseParams(String params) throws JSONException {
+		JSONObject json = new JSONObject(params);
+		HashMap<String, String> paramHash = new HashMap<String, String>();
+		Iterator<?> keys = json.keys();
+		String key;
+		while (keys.hasNext()) {
+			key = (String) keys.next();
+			paramHash.put(key, json.getString(key));
+		}
+		return paramHash;
 	}
 
 	String createJsonString(boolean success, String response) {
@@ -106,26 +176,4 @@ public class RequestAndResponseManager {
 		// }
 	}
 
-	String getErrorString(ApiProcessingError errorType) {
-		switch (errorType) {
-		case InvalidRequest:
-			return "Invalid Request";
-		case CommandMissing:
-			return "Command Missing";
-		case IncompleteRequest:
-			return "Imcomplete Request";
-		case ParameterMissing:
-			return "Parameter Missing";
-		case InvalidParameter:
-			return "Invalid Parameter";
-		case RequestParseError:
-			return "Request Parse Error";
-		case ResponseParseError:
-			return "Response Parse Error";
-		case GenericError:
-			return "Generic Error";
-		default:
-			return "Something went wrong with request processing";
-		}
-	}
 }
