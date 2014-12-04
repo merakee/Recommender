@@ -12,9 +12,12 @@
 4. Upload files to EC2 instance: use scp
 	scp -i my-key-pair.pem ec2-user@ec2-198-51-100-1.compute-1.amazonaws.com:~/File1.txt ~/File2.txt
 	
-	Files to upload: jar file, logger.properties, and config_secret.sh
+	# alias 
+	aws_file_recom_dev file_path
 	
-5. Set up end ENV properties: run config_secret.sh and check .bashrc file 
+	Files to upload: jar file, logger.properties, and config_secret_aws_*.sh
+	
+5. Set up end ENV properties: run config_secret_aws_dev_bashfile.sh or config_secret_aws_production_bashfile.sh and check .bashrc file and ENV 
 	
 For more info:
 http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AccessingInstancesLinux.html

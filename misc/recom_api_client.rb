@@ -55,8 +55,14 @@ class Client
   end
 end
 
-host = (ARGV[1].eql?"-aws")?"womdev.reccomender.freelogue.net":"localhost"
+host = (ARGV[1].eql?"-aws")?"womdev.recommender.freelogue.net":"localhost"
 puts "Connection to #{host} ...running #{(ARGV[0].eql?"-a")?"auto":"manual"} mode...." 
-    
-api_socket = TCPSocket.open( host, 2014)
+
+begin
+  api_socket = TCPSocket.open( host, 2014)
+rescue => e
+  puts e.message
+  exit
+end
+
 Client.new( api_socket,ARGV[0])
