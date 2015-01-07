@@ -55,8 +55,19 @@ class Client
   end
 end
 
-host = (ARGV[1].eql?"-aws")?"womdev.recommender.freelogue.net":"localhost"
-puts "Connection to #{host} ...running #{(ARGV[0].eql?"-a")?"auto":"manual"} mode...." 
+case ARGV[1]
+ when "-p"
+  host = "womproduc.recommender.freelogue.net"
+  hostname = "AWS production"
+ when "-d"
+  host = "womdev.recommender.freelogue.net"
+  hostname = "AWS development"
+ else
+  host = "localhost"
+  hostname = "Local host"
+end
+
+puts "Connection to #{hostname}: #{host} ...running #{(ARGV[0].eql?"-a")?"auto":"manual"} mode...." 
 
 begin
   api_socket = TCPSocket.open( host, 2014)
