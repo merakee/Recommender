@@ -22,9 +22,12 @@
 For more info:
 http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AccessingInstancesLinux.html
 
-	source config_secret_aws_production.sh
+	source config_secret_aws_production_bashfile.sh
 	source .bashrc 
 	printenv to see ENV 
+	echo $DB_NAME
+	
+	unset DB_NAME to clear out old value 
 
 6. use screen command to run in background
 
