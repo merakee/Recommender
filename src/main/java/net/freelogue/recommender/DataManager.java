@@ -75,7 +75,7 @@ public class DataManager implements Runnable {
 
 	static double convertResponseToRating(boolean response) {
 		return response ? AppConstants.INPUT_SPREAD_VAL
-				: AppConstants.INPUT_SPREAD_VAL;
+				: AppConstants.INPUT_KILL_VAL;
 	}
 
 	static boolean isUpdateNeededCountBased() throws SQLException {
