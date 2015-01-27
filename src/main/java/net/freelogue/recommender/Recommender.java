@@ -5,10 +5,15 @@ import java.util.List;
 import java.util.Collections;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.io.IOException;
-import java.io.FileNotFoundException;
 
-import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
+
+
+//postgresql jdbc data model imports
+import org.postgresql.ds.PGSimpleDataSource;
+import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
+import org.apache.mahout.cf.taste.impl.model.jdbc.PostgreSQLJDBCDataModel;
+//import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
+
 import org.apache.mahout.cf.taste.impl.recommender.svd.SVDRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.svd.SVDPlusPlusFactorizer;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
@@ -52,8 +57,21 @@ public class Recommender {
 			return;
 		}
 		try {
-			FileDataModel dataModel = getFileDataModel(dataFile);
-			SVDPlusPlusFactorizer svdFactorizer = getSvdFactorizer(dataModel);
+			PostgreSQLJDBCDataModel jdbcDataModel = getJDBCDataModel();
+			/*
+			LongPrimitiveIterator userIter = jdbcDataModel.getUserIDs();
+			
+			while (userIter.hasNext()) {
+				Long user = userIter.next();
+				LongPrimitiveIterator itemIter = jdbcDataModel.getItemIDs();
+				while (itemIter.hasNext()) {
+					System.out.println(jdbcDataModel.getPreferenceValue(user, itemIter.next()));
+				}
+			}
+			
+			*/
+			//FileDataModel dataModel = getFileDataModel(dataFile);
+			SVDPlusPlusFactorizer svdFactorizer = getSvdFactorizer(jdbcDataModel);
 
 			// FilePersistenceStrategy persistenceStrategy =
 			// getPersistenceStrategy(SVD_DATA_FILE);
@@ -61,25 +79,36 @@ public class Recommender {
 			// recommender
 			// svdRecommender = new SVDRecommender(dataModel, svdFactorizer,
 			// persistenceStrategy);
-			SVDRecommender svdRecommender_temp = new SVDRecommender(dataModel,
-					svdFactorizer);
+			SVDRecommender svdRecommender_temp = new SVDRecommender(jdbcDataModel, svdFactorizer);
 			swapSVDRecommender(svdRecommender_temp);
 			LOGGER.log(Level.INFO, getCurrentModelInfo());
-		} catch (FileNotFoundException fnf) {
-			LOGGER.log(Level.SEVERE, fnf.getMessage(), fnf);
-		} catch (IOException ioe) {
-			LOGGER.log(Level.SEVERE, ioe.getMessage(), ioe);
 		} catch (TasteException te) {
 			LOGGER.log(Level.SEVERE, te.getMessage(), te);
 		}
 	}
 
-	private FileDataModel getFileDataModel(File dataFile) throws IOException,
+	
+	private PostgreSQLJDBCDataModel getJDBCDataModel() {
+		PGSimpleDataSource dataSource = new PGSimpleDataSource();
+		dataSource.setServerName(DBUtil.getDBServerName());
+		dataSource.setUser(DBUtil.getDbUserName());
+		dataSource.setPassword(DBUtil.getDbUserPass());
+		dataSource.setDatabaseName(DBUtil.getDbName());
+		String preferenceTable = AppConstants.RATINGS_DB_TABLE_NAME;
+		String userIDColumn = AppConstants.RATINGS_DB_USERID_COL;
+		String itemIDColumn = AppConstants.RATINGS_DB_ITEMID_COL;
+		String preferenceColumn = AppConstants.RATINGS_DB_PREFERENCE_COL;
+		String timestampColumn = null;
+		PostgreSQLJDBCDataModel jdbcDataModel = new PostgreSQLJDBCDataModel(dataSource, preferenceTable, userIDColumn, itemIDColumn, preferenceColumn, timestampColumn);
+		return jdbcDataModel;
+	}
+	
+	/*private FileDataModel getFileDataModel(File dataFile) throws IOException,
 			FileNotFoundException {
 		return new FileDataModel(dataFile);
-	}
+	}*/
 
-	private SVDPlusPlusFactorizer getSvdFactorizer(FileDataModel dataModel)
+	private SVDPlusPlusFactorizer getSvdFactorizer(PostgreSQLJDBCDataModel dataModel)
 			throws TasteException {
 		// factorizer
 		// SVDPlusPlusFactorizer(DataModel dataModel, int numFeatures,
@@ -107,7 +136,8 @@ public class Recommender {
 	}
 
 	private String getCurrentModelInfo() {
-		FileDataModel dataModel = (FileDataModel) svdRecommender.getDataModel();
+		PostgreSQLJDBCDataModel dataModel = (PostgreSQLJDBCDataModel) svdRecommender.getDataModel();
+		//FileDataModel dataModel = (FileDataModel) svdRecommender.getDataModel();
 		String modelInfo = "Recommender update completed with Recommender settings: ";
 		try {
 			modelInfo += "Number of Users: " + dataModel.getNumUsers() + ", ";
@@ -135,4 +165,5 @@ public class Recommender {
 			return Collections.<RecommendedItem> emptyList();
 		}
 	}
+	
 }

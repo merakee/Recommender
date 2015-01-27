@@ -1,6 +1,6 @@
 # work flow for hosting on EC2
 
-1. Lunch EC2 instance
+1. Launch EC2 instance
 
 2. Connect via SSH
 
@@ -44,7 +44,7 @@ Screen comands:
 4. Exit: CTRL-A K or exit
 5. List: screen -ls
 6. Help: CTRL-A ?
-7. Logging: within screen: CTRL-A H (otggle on/off) OR at the start screen -L
+7. Logging: within screen: CTRL-A H (toggle on/off) OR at the start screen -L
 
 
 7. Test recommender as a client

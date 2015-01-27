@@ -2,12 +2,12 @@ package net.freelogue.recommender;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.io.FileWriter;
 
 public class DataManager implements Runnable {
 	// class variables
@@ -16,6 +16,7 @@ public class DataManager implements Runnable {
 	private static Statement sqlStatement = null;
 	private static ResultSet dbResultsSet = null;
 	private static FileWriter fileWriter;
+	private static UserRatingsManager userRatingsMgr = null;
 
 	public static long maxUserResponseId = 0;
 	public static long lastActiveResponseCount = 0;
@@ -27,13 +28,14 @@ public class DataManager implements Runnable {
 		} else {
 			connectToDbAndWriteDataToFile();
 		}
-
 		LOGGER.log(Level.INFO, CommonUtil.getThreadCountString());
 	}
 
+	//TODO: remove file-writing code
 	static void connectToDbAndWriteDataToFile() {
 		try {
 			connectToDb();
+			userRatingsMgr = new UserRatingsManager(dbConnection);
 			if ( !isUpdateNeededCountBased()) {
 				closeDbConnection();
 				LOGGER.log(Level.INFO,
@@ -46,10 +48,11 @@ public class DataManager implements Runnable {
 			// String sql_command = "SELECT count(*) FROM user_responses ";
 
 			executeStatement(sql_command);
+			
 			// open file to write
 			fileWriter = DataFileManager.openWriter(AppConstants.CSV_DATA_FILE);
 			while (dbResultsSet.next()) {
-				// white to csv file
+				// write to csv file
 				DataFileManager.writeLine(
 						fileWriter,
 						dbResultsSet.getInt("user_id")
@@ -58,24 +61,21 @@ public class DataManager implements Runnable {
 								+ ","
 								+ convertResponseToRating(dbResultsSet
 										.getBoolean("response")) + "\n");
+				/*update user ratings table*/
+				userRatingsMgr.storeTableRecord(dbResultsSet.getInt("user_id"), dbResultsSet.getInt("content_id"), dbResultsSet.getBoolean("response"));
+				//userRatingsMgr.writeToRatingsTable(dbResultsSet.getInt("user_id"), dbResultsSet.getInt("content_id"), dbResultsSet.getBoolean("response"));
 			}
+			userRatingsMgr.writeToRatingsTable();
 			// need to close the file before recommender update to avoid file access conflict
 			DataFileManager.closeWriter(fileWriter);
+			
 			closeDbConnection();
 			LOGGER.log(Level.INFO, "Fetch data from Database and write to file...completed.");
 			// update model
 			RecommendationManager.updateRecommender();
 		} catch (SQLException sqle) {
 			LOGGER.log(Level.WARNING, sqle.getMessage(), sqle);
-		} finally {
-			// need to close in case of exception - in addition to closing it in the try block 
-			DataFileManager.closeWriter(fileWriter);
 		}
-	}
-
-	static double convertResponseToRating(boolean response) {
-		return response ? AppConstants.INPUT_SPREAD_VAL
-				: AppConstants.INPUT_SPREAD_VAL;
 	}
 
 	static boolean isUpdateNeededCountBased() throws SQLException {
@@ -94,6 +94,7 @@ public class DataManager implements Runnable {
 			return false;
 		}
 	}
+	
 	static boolean isUpdateNeeded() throws SQLException {
 		String sql_command = "SELECT max(id) FROM user_responses";
 		executeStatement(sql_command);
@@ -111,8 +112,8 @@ public class DataManager implements Runnable {
 	
 	static void connectToDb() throws SQLException {
 		if (dbConnection == null) {
-			dbConnection = DriverManager.getConnection(getDbUrl(),
-					getDbUserName(), getDbUserPass());
+			dbConnection = DriverManager.getConnection(DBUtil.getDbUrl(),
+					DBUtil.getDbUserName(), DBUtil.getDbUserPass());
 		}
 		if (sqlStatement == null) {
 			sqlStatement = dbConnection.createStatement();
@@ -123,6 +124,10 @@ public class DataManager implements Runnable {
 		dbResultsSet = sqlStatement.executeQuery(sql_command);
 	}
 
+	static double convertResponseToRating(boolean response) {
+		return response ? AppConstants.INPUT_SPREAD_VAL : AppConstants.INPUT_KILL_VAL;
+	}
+	
 	static void closeDbConnection() throws SQLException {
 		if (dbResultsSet != null) {
 			dbResultsSet.close();
@@ -135,40 +140,6 @@ public class DataManager implements Runnable {
 		if (dbConnection != null) {
 			dbConnection.close();
 			dbConnection = null;
-		}
-	}
-
-	static String getDbUrl() {
-		if ((System.getenv("DB_URL") != null)
-				&& (System.getenv("DB_NAME") != null)) {
-			return "jdbc:postgresql://" + System.getenv("DB_URL") + "/"
-					+ System.getenv("DB_NAME");
-		} else {
-			LOGGER.log(Level.SEVERE, "DB_URL Env is not set. Exit program.");
-			System.exit(1);
-			return "";
-		}
-	}
-
-	static String getDbUserName() {
-		if (System.getenv("DB_USER_NAME") != null) {
-			return System.getenv("DB_USER_NAME");
-		} else {
-			LOGGER.log(Level.SEVERE,
-					"DB_USER_NAME Env is not set. Exit program.");
-			System.exit(1);
-			return "";
-		}
-	}
-
-	static String getDbUserPass() {
-		if (System.getenv("DB_USER_PASS") != null) {
-			return System.getenv("DB_USER_PASS");
-		} else {
-			LOGGER.log(Level.SEVERE,
-					"DB_USER_PASS Env is not set. Exit program.");
-			System.exit(1);
-			return "";
 		}
 	}
 

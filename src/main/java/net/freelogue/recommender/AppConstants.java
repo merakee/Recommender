@@ -21,13 +21,23 @@ public class AppConstants {
 	public static final String SVD_DATA_FILE = "./svd_data.data";
 	public static final String CSV_DATA_FILE = "./ratings_data.csv";
 
+	public static final String BE_DB_TABLE_NAME = "user_responses";
+	public static final String BE_DB_USERID_COL = "user_id";
+	public static final String BE_DB_ITEMID_COL = "content_id";
+	public static final String BE_DB_PREFERENCE_COL = "response";
+	
+	public static final String RATINGS_DB_TABLE_NAME = "user_ratings";
+	public static final String RATINGS_DB_USERID_COL = "user_id";
+	public static final String RATINGS_DB_ITEMID_COL = "content_id";
+	public static final String RATINGS_DB_PREFERENCE_COL = "rating";
+	
 	// Timing parameters
 	public static final long DATABASE_POLLING_INTERVAL = 300; // in seconds
 	public static final int API_SOCKET_TIMEOUT_INTERVAL = 60; // in seconds // Currently not used:
 	
 	// Thread Parameters
 	public static final int API_MANAGER_THREAD_PRIORITY = Thread.MAX_PRIORITY;
-	public static final int DATA_MANAGER_THREAD_PRIORITY = Thread.NORM_PRIORITY; // Currently not used: set to NROM priority
+	public static final int DATA_MANAGER_THREAD_PRIORITY = Thread.NORM_PRIORITY; // Currently not used: set to NORM priority
 	public static final int RECOMMENDER_REFRESH_THREAD_PRIORITY = Thread.NORM_PRIORITY;
 	public static final int APP_DEFAULT_THREAD_PRIORITY = Thread.NORM_PRIORITY;
 
