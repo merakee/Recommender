@@ -43,8 +43,7 @@ public class DataManager implements Runnable {
 				return;
 			}
 			//int limit = CommonUtil.getRandom(50000)+7400;
-			String sql_command = "SELECT user_id,content_id,response FROM user_responses WHERE content_id IN (SELECT id FROM contents WHERE spread_count >"
-					+ AppConstants.CONTENT_MIN_SPREAD_COUNT + ")";
+			String sql_command = "SELECT user_id,content_id,response FROM " + AppConstants.RESPONSES_TABLE_NAME + " WHERE content_id IN (SELECT id FROM contents WHERE spread_count >" + AppConstants.CONTENT_MIN_SPREAD_COUNT + ")";
 			// String sql_command = "SELECT count(*) FROM user_responses ";
 
 			executeStatement(sql_command);
@@ -63,7 +62,6 @@ public class DataManager implements Runnable {
 										.getBoolean("response")) + "\n");
 				/*update user ratings table*/
 				userRatingsMgr.storeTableRecord(dbResultsSet.getInt("user_id"), dbResultsSet.getInt("content_id"), dbResultsSet.getBoolean("response"));
-				//userRatingsMgr.writeToRatingsTable(dbResultsSet.getInt("user_id"), dbResultsSet.getInt("content_id"), dbResultsSet.getBoolean("response"));
 			}
 			userRatingsMgr.writeToRatingsTable();
 			// need to close the file before recommender update to avoid file access conflict
@@ -80,8 +78,7 @@ public class DataManager implements Runnable {
 
 	static boolean isUpdateNeededCountBased() throws SQLException {
 		//String sql_command = "SELECT max(id) FROM user_responses";
-		String sql_command = "SELECT count(*) FROM user_responses WHERE content_id IN (SELECT id FROM contents WHERE spread_count >"
-		+ AppConstants.CONTENT_MIN_SPREAD_COUNT + ")";
+		String sql_command = "SELECT count(*) FROM " + AppConstants.RESPONSES_TABLE_NAME + " WHERE content_id IN (SELECT id FROM contents WHERE spread_count >" + AppConstants.CONTENT_MIN_SPREAD_COUNT + ")";
 		executeStatement(sql_command);
 		if (dbResultsSet.next()) {
 			int totalCount = dbResultsSet.getInt(1);
@@ -96,7 +93,7 @@ public class DataManager implements Runnable {
 	}
 	
 	static boolean isUpdateNeeded() throws SQLException {
-		String sql_command = "SELECT max(id) FROM user_responses";
+		String sql_command = "SELECT max(id) FROM " + AppConstants.RESPONSES_TABLE_NAME;
 		executeStatement(sql_command);
 		if (dbResultsSet.next()) {
 			int maxId = dbResultsSet.getInt(1);

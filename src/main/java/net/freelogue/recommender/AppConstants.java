@@ -21,15 +21,41 @@ public class AppConstants {
 	public static final String SVD_DATA_FILE = "./svd_data.data";
 	public static final String CSV_DATA_FILE = "./ratings_data.csv";
 
-	public static final String BE_DB_TABLE_NAME = "user_responses";
-	public static final String BE_DB_USERID_COL = "user_id";
-	public static final String BE_DB_ITEMID_COL = "content_id";
-	public static final String BE_DB_PREFERENCE_COL = "response";
+	/*Tables available in backend database*/
+	//user responses table
+	public static final String RESPONSES_TABLE_NAME = "user_responses";
+	public static final String RESPONSES_USERID_COL = "user_id";
+	public static final String RESPONSES_ITEMID_COL = "content_id";
+	public static final String RESPONSES_PREFERENCE_COL = "response";
 	
-	public static final String RATINGS_DB_TABLE_NAME = "user_ratings";
-	public static final String RATINGS_DB_USERID_COL = "user_id";
-	public static final String RATINGS_DB_ITEMID_COL = "content_id";
-	public static final String RATINGS_DB_PREFERENCE_COL = "rating";
+	//contents table
+	public static final String CONTENTS_TABLE_NAME = "contents";
+	public static final String CONTENTS_CONTENTID_COL = "id";
+	public static final String CONTENTS_USERID_COL = "user_id";
+	
+	//comments table
+	public static final String COMMENTS_TABLE_NAME = "comments";
+	public static final String COMMENTS_USER_ID = "user_id";
+	public static final String COMMENTS_CONTENT_ID = "content_id";
+	
+	//comment responses table
+	public static final String COMMENT_RESPONSES_TABLE_NAME = "comment_responses";
+	public static final String COMMENT_RESPONSES_USER_ID = "user_id";
+	public static final String COMMENT_RESPONSES_COMMENT_ID = "comment_id";
+	public static final String COMMENT_RESPONSES_RESP = "response";
+	
+	// user ratings table
+	public static final String RATINGS_TABLE_NAME = "user_ratings";
+	public static final String RATINGS_USERID_COL = "user_id";
+	public static final String RATINGS_ITEMID_COL = "content_id";
+	public static final String RATINGS_PREFERENCE_COL = "rating";
+	
+	/*Weights for user preference model equation*/
+	public static final float WEIGHT_AUTHORSHIP = 50.0f;
+	public static final float WEIGHT_SPREAD = 10.0f;
+	public static final float WEIGHT_KILL = 10.0f;
+	public static final float WEIGHT_COMMENT = 3.0f;
+	public static final float WEIGHT_COMMENT_LIKE = 1.0f;
 	
 	// Timing parameters
 	public static final long DATABASE_POLLING_INTERVAL = 300; // in seconds

@@ -49,7 +49,7 @@ class RecommendationClient
   get_response
   end
 
-  def get_recommendation_for_user(user_id,count=0)
+  def get_recommendation_for_user(user_id, count=0)
     #return empty if there is problem with socket connection 
     return [] if is_socket_invalid 
     request = get_json_for_commend("getRecommendationForUser",{user_id:user_id,count:count})

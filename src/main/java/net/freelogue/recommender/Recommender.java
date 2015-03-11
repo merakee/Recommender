@@ -8,12 +8,14 @@ import java.util.logging.Level;
 
 
 
+
 //postgresql jdbc data model imports
 import org.postgresql.ds.PGSimpleDataSource;
 import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
 import org.apache.mahout.cf.taste.impl.model.jdbc.PostgreSQLJDBCDataModel;
 //import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
 
+import org.apache.mahout.cf.taste.impl.model.jdbc.ReloadFromJDBCDataModel;
 import org.apache.mahout.cf.taste.impl.recommender.svd.SVDRecommender;
 import org.apache.mahout.cf.taste.impl.recommender.svd.SVDPlusPlusFactorizer;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
@@ -58,6 +60,7 @@ public class Recommender {
 		}
 		try {
 			PostgreSQLJDBCDataModel jdbcDataModel = getJDBCDataModel();
+			ReloadFromJDBCDataModel dataModel = new ReloadFromJDBCDataModel(jdbcDataModel);
 			/*
 			LongPrimitiveIterator userIter = jdbcDataModel.getUserIDs();
 			
@@ -68,14 +71,13 @@ public class Recommender {
 					System.out.println(jdbcDataModel.getPreferenceValue(user, itemIter.next()));
 				}
 			}
-			
 			*/
+			
 			//FileDataModel dataModel = getFileDataModel(dataFile);
-			SVDPlusPlusFactorizer svdFactorizer = getSvdFactorizer(jdbcDataModel);
-
+			SVDPlusPlusFactorizer svdFactorizer = getSvdFactorizer(dataModel);
+			
 			// FilePersistenceStrategy persistenceStrategy =
 			// getPersistenceStrategy(SVD_DATA_FILE);
-
 			// recommender
 			// svdRecommender = new SVDRecommender(dataModel, svdFactorizer,
 			// persistenceStrategy);
@@ -87,17 +89,16 @@ public class Recommender {
 		}
 	}
 
-	
 	private PostgreSQLJDBCDataModel getJDBCDataModel() {
 		PGSimpleDataSource dataSource = new PGSimpleDataSource();
 		dataSource.setServerName(DBUtil.getDBServerName());
 		dataSource.setUser(DBUtil.getDbUserName());
 		dataSource.setPassword(DBUtil.getDbUserPass());
 		dataSource.setDatabaseName(DBUtil.getDbName());
-		String preferenceTable = AppConstants.RATINGS_DB_TABLE_NAME;
-		String userIDColumn = AppConstants.RATINGS_DB_USERID_COL;
-		String itemIDColumn = AppConstants.RATINGS_DB_ITEMID_COL;
-		String preferenceColumn = AppConstants.RATINGS_DB_PREFERENCE_COL;
+		String preferenceTable = AppConstants.RATINGS_TABLE_NAME;
+		String userIDColumn = AppConstants.RATINGS_USERID_COL;
+		String itemIDColumn = AppConstants.RATINGS_ITEMID_COL;
+		String preferenceColumn = AppConstants.RATINGS_PREFERENCE_COL;
 		String timestampColumn = null;
 		PostgreSQLJDBCDataModel jdbcDataModel = new PostgreSQLJDBCDataModel(dataSource, preferenceTable, userIDColumn, itemIDColumn, preferenceColumn, timestampColumn);
 		return jdbcDataModel;
@@ -108,7 +109,8 @@ public class Recommender {
 		return new FileDataModel(dataFile);
 	}*/
 
-	private SVDPlusPlusFactorizer getSvdFactorizer(PostgreSQLJDBCDataModel dataModel)
+	//private SVDPlusPlusFactorizer getSvdFactorizer(PostgreSQLJDBCDataModel dataModel)
+	private SVDPlusPlusFactorizer getSvdFactorizer(ReloadFromJDBCDataModel dataModel)
 			throws TasteException {
 		// factorizer
 		// SVDPlusPlusFactorizer(DataModel dataModel, int numFeatures,
@@ -153,6 +155,7 @@ public class Recommender {
 		return modelInfo;
 	}
 
+	/* Returns List of recommended RecommendedItems, ordered from most strongly recommended to least. */
 	synchronized List<RecommendedItem> getRecommendation(long userId, int count) {
 		//CommonUtil.sleepThreadForNSecondsWithTag(60, "recom"); // this is just for initial thread synchronized testing - must be removed 
 		if (svdRecommender == null) {

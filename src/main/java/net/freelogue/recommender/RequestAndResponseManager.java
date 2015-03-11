@@ -34,7 +34,7 @@ public class RequestAndResponseManager {
 			// return createResponse(command, params);
 			ApiRequest apiRequest = getApiRequest(request);
 			HashMap<String, String> paramsHash = parseParams(apiRequest.params);
-			return processCommabdAndCreateResponse(apiRequest.command,
+			return processCommandAndCreateResponse(apiRequest.command,
 					paramsHash);
 		} catch (JSONException je) {
 			LOGGER.log(Level.WARNING, je.getMessage(), je);
@@ -43,7 +43,7 @@ public class RequestAndResponseManager {
 		}
 	}
 
-	String processCommabdAndCreateResponse(String command,
+	String processCommandAndCreateResponse(String command,
 			HashMap<String, String> paramsHash) {
 		switch (command) {
 		case "getRecommendationForUser":
@@ -54,7 +54,8 @@ public class RequestAndResponseManager {
 		}
 
 	}
-
+	
+	/* count is the number of recommendations desired. */
 	String getRecommendationForUserResponse(HashMap<String, String> paramsHash) {
 		try {
 			int userId = Integer.parseInt(paramsHash.get("user_id"));
